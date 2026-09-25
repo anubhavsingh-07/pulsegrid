@@ -3,107 +3,235 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PulseGrid | Telemetry</title>
+  <title>PulseGrid | Smart Cold Chain</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   </style>
 </head>
-<body class="bg-[#0a0a0a] text-zinc-400 min-h-screen p-6 md:p-12">
-  <div class="max-w-3xl mx-auto space-y-8">
+<body class="bg-[#0a0a0a] text-zinc-400 min-h-screen p-4 md:p-8">
+  <div class="max-w-6xl mx-auto space-y-6">
 
-    <header class="flex justify-between items-end border-b border-zinc-800 pb-4">
+    <header class="flex flex-col md:flex-row justify-between items-start md:items-end border-b border-zinc-800 pb-4 gap-4">
       <div>
-        <h1 class="text-lg font-semibold text-zinc-100 tracking-wide">PULSEGRID</h1>
-        <p class="text-xs text-zinc-500 mt-1">NODE: PG-001</p>
-      </div>
-      <div id="connStatus" class="text-xs text-zinc-500 flex items-center gap-2">
-        <span class="w-1.5 h-1.5 rounded-full bg-zinc-600 animate-pulse"></span> Connecting...
-      </div>
-    </header>
-
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-      <!-- Telemetry Environment -->
-      <div class="bg-[#111] border border-zinc-800 rounded p-6">
-        <h2 class="text-[10px] uppercase tracking-widest text-zinc-500 mb-6">Environment</h2>
-        <div class="space-y-6">
-          <div>
-            <div class="text-xs text-zinc-500 mb-1">Temperature</div>
-            <div class="flex items-baseline gap-1">
-              <span id="tempVal" class="text-4xl font-light text-zinc-100">--</span>
-              <span class="text-sm text-zinc-500">°C</span>
-            </div>
-          </div>
-          <div>
-            <div class="text-xs text-zinc-500 mb-1">Relative Humidity</div>
-            <div class="flex items-baseline gap-1">
-              <span id="humVal" class="text-2xl font-light text-zinc-300">--</span>
-              <span class="text-xs text-zinc-500">%</span>
-            </div>
-          </div>
+        <h1 class="text-xl font-bold text-zinc-100 tracking-wider">PULSEGRID</h1>
+        <div id="connStatus" class="text-xs text-zinc-500 flex items-center gap-2 mt-1">
+          <span class="w-1.5 h-1.5 rounded-full bg-zinc-600 animate-pulse"></span> Connecting to Edge Node...
         </div>
       </div>
 
-      <!-- Access Control -->
-      <div class="bg-[#111] border border-zinc-800 rounded p-6">
-        <h2 class="text-[10px] uppercase tracking-widest text-zinc-500 mb-6">Access & Status</h2>
+      <div class="flex bg-[#111] border border-zinc-800 rounded p-1">
+        <button onclick="switchRole('bank')" id="btnBank" class="px-4 py-1.5 text-xs font-semibold rounded bg-zinc-800 text-zinc-100 transition-all">Central Blood Bank</button>
+        <button onclick="switchRole('icu')" id="btnIcu" class="px-4 py-1.5 text-xs font-semibold rounded text-zinc-500 hover:text-zinc-300 transition-all">Hospital ICU</button>
+      </div>
+    </header>
 
-        <div class="space-y-4 text-sm">
-          <div class="flex justify-between items-center py-2 border-b border-zinc-800/50">
-            <span class="text-zinc-400">Vault Security</span>
-            <span id="lockStatus" class="text-emerald-400">Secured</span>
+    <div id="viewBank" class="space-y-6 block">
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="bg-[#111] border border-zinc-800 rounded p-5">
+          <div class="text-[10px] uppercase tracking-widest text-zinc-500 mb-2">Vault Temp (PG-001)</div>
+          <div class="flex items-baseline gap-1">
+            <span id="bankTemp" class="text-3xl font-light text-zinc-100">--</span><span class="text-sm">°C</span>
+          </div>
+          <div id="tempStatus" class="text-xs mt-2 text-zinc-500">Awaiting data...</div>
+        </div>
+
+        <div class="bg-[#111] border border-zinc-800 rounded p-5">
+          <div class="text-[10px] uppercase tracking-widest text-zinc-500 mb-2">Agitator Motor</div>
+          <div id="bankMotor" class="text-xl font-light text-zinc-100 mt-2">--</div>
+        </div>
+
+        <div class="bg-[#111] border border-zinc-800 rounded p-5">
+          <div class="text-[10px] uppercase tracking-widest text-zinc-500 mb-2">Vault Security</div>
+          <div id="bankLock" class="text-xl font-light text-emerald-400 mt-2">Secured</div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="bg-[#111] border border-zinc-800 rounded p-6">
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="text-[10px] uppercase tracking-widest text-zinc-500">Live Platelet Inventory</h2>
+            <span class="text-[10px] text-zinc-500 bg-zinc-900 px-2 py-1 rounded">5 Day Expiry Rule Active</span>
           </div>
 
-          <!-- Remote Unlock UI -->
-          <div class="py-2 border-b border-zinc-800/50">
-            <label class="text-xs text-zinc-500 block mb-2">Hospital Receiving OTP</label>
-            <div class="flex gap-2">
-              <input type="text" id="otpInput" placeholder="Enter OTP" class="bg-[#1a1a1a] border border-zinc-700 rounded px-3 py-1.5 text-sm text-zinc-200 w-full focus:outline-none focus:border-emerald-500/50">
-              <button onclick="unlockVault()" class="bg-emerald-900/30 text-emerald-400 border border-emerald-800/50 rounded px-4 py-1.5 text-xs font-bold hover:bg-emerald-800/40 transition-colors">
-                AUTHORIZE
-              </button>
-            </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="text-zinc-600 border-b border-zinc-800">
+                <tr>
+                  <th class="pb-2 font-medium">Unit ID</th>
+                  <th class="pb-2 font-medium">Type</th>
+                  <th class="pb-2 font-medium">Group</th>
+                  <th class="pb-2 font-medium">Status</th>
+                  <th class="pb-2 font-medium text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody id="inventoryTable" class="text-zinc-300">
+                <!-- Data injected from inventory.js -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="bg-[#111] border border-zinc-800 rounded p-6">
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="text-[10px] uppercase tracking-widest text-zinc-500">Transit Audit Ledger (PG-001)</h2>
+            <button class="text-[10px] border border-zinc-700 hover:bg-zinc-800 rounded px-2 py-1 transition-colors">Export JSON</button>
           </div>
 
-          <div class="flex justify-between items-center py-2">
-            <span class="text-zinc-400">Agitator Motor</span>
-            <span class="text-zinc-100" id="agitatorState">Running</span>
+          <div class="overflow-hidden">
+            <table class="w-full text-left text-xs">
+              <thead class="text-zinc-600 border-b border-zinc-800">
+                <tr>
+                  <th class="pb-2 font-medium">Timestamp</th>
+                  <th class="pb-2 font-medium">Temp</th>
+                  <th class="pb-2 font-medium">Agitator</th>
+                  <th class="pb-2 font-medium">Integrity</th>
+                </tr>
+              </thead>
+              <tbody id="auditTable" class="text-zinc-300 block max-h-64 overflow-y-auto w-full table-layout-fixed no-scrollbar mt-2 space-y-1">
+                <!-- MQTT Data Injects Here -->
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
     </div>
+
+    <div id="viewIcu" class="space-y-6 hidden">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto mt-6">
+
+        <div class="bg-[#111] border border-zinc-800 rounded-xl p-6 shadow-2xl">
+          <h2 class="text-sm font-bold text-zinc-100 mb-4">Emergency Requisition</h2>
+          <div class="space-y-4 text-sm">
+            <div>
+              <label class="text-xs text-zinc-500 block mb-1">Blood Group Needed</label>
+              <select class="w-full bg-[#0a0a0a] border border-zinc-700 rounded px-3 py-2 text-zinc-200 outline-none">
+                <option>O+ (Positive)</option>
+                <option>A+ (Positive)</option>
+                <option>B- (Negative)</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-xs text-zinc-500 block mb-1">Component Type</label>
+              <select class="w-full bg-[#0a0a0a] border border-zinc-700 rounded px-3 py-2 text-zinc-200 outline-none">
+                <option>SDP (Single Donor Platelets)</option>
+                <option>RDP (Random Donor Platelets)</option>
+              </select>
+            </div>
+            <button onclick="alert('Requisition sent to Central Blood Bank.')" class="w-full bg-zinc-800 hover:bg-zinc-700 text-white rounded px-4 py-2 font-bold transition-colors">
+              SUBMIT REQUEST
+            </button>
+          </div>
+        </div>
+
+        <div class="bg-[#111] border border-zinc-800 rounded-xl p-6 shadow-2xl text-center flex flex-col justify-center">
+          <div class="w-12 h-12 rounded-full bg-emerald-950 border border-emerald-800 flex items-center justify-center mx-auto mb-4">
+            <svg class="w-6 h-6 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+          </div>
+
+          <h2 class="text-lg font-bold text-zinc-100 mb-1">Delivery: PG-001</h2>
+          <p class="text-xs text-zinc-500 mb-6">Cold chain compliance verified.</p>
+
+          <div class="space-y-3">
+            <input type="text" id="otpInput" placeholder="Enter OTP (e.g. 1234)" class="w-full bg-[#0a0a0a] border border-zinc-700 rounded px-4 py-2 text-center text-zinc-100 tracking-widest outline-none focus:border-emerald-500/50">
+            <button onclick="unlockVault()" class="w-full bg-emerald-600 text-white rounded px-4 py-2 font-bold hover:bg-emerald-500 transition-colors shadow-lg shadow-emerald-900/20">
+              AUTHORIZE UNLOCK
+            </button>
+          </div>
+          <div id="icuLockStatus" class="mt-4 text-[10px] text-emerald-500 font-medium tracking-wide">VAULT STATUS: SECURED</div>
+        </div>
+
+      </div>
+    </div>
   </div>
 
+  <!-- IMPORT DATA -->
+  <script src="inventory.js"></script>
+
+  <!-- APPLICATION LOGIC -->
   <script>
+    window.onload = () => {
+      const tbody = document.getElementById('inventoryTable');
+      plateletInventory.forEach(unit => {
+        let statusBadge = '';
+        let btnDisabled = '';
+
+        if (unit.status === 'Available') {
+          statusBadge = '<span class="text-emerald-400 bg-emerald-900/30 px-2 py-0.5 rounded">Available</span>';
+        } else if (unit.status === 'Critical_Expiry') {
+          statusBadge = '<span class="text-amber-400 bg-amber-900/30 px-2 py-0.5 rounded">Expiring < 24h</span>';
+        } else if (unit.status === 'Reserved_Transit') {
+          statusBadge = '<span class="text-blue-400 bg-blue-900/30 px-2 py-0.5 rounded">In Transit</span>';
+          btnDisabled = 'disabled opacity-50 cursor-not-allowed';
+        } else {
+          statusBadge = '<span class="text-rose-400 bg-rose-900/30 px-2 py-0.5 rounded">Expired</span>';
+          btnDisabled = 'disabled opacity-50 cursor-not-allowed';
+        }
+
+        tbody.innerHTML += `
+          <tr class="border-b border-zinc-800/50 hover:bg-zinc-900/50 transition-colors">
+            <td class="py-2 font-mono text-zinc-300">${unit.unit_id}</td>
+            <td class="py-2">${unit.type}</td>
+            <td class="py-2 font-bold">${unit.group}</td>
+            <td class="py-2">${statusBadge}</td>
+            <td class="py-2 text-right">
+              <button onclick="alert('Dispatching ${unit.unit_id} via Vault PG-001. OTP: 1234 generated.')" ${btnDisabled} class="text-[10px] bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-2 py-1 rounded transition-colors">Dispatch</button>
+            </td>
+          </tr>
+        `;
+      });
+    };
+
+    function switchRole(role) {
+      const btnBank = document.getElementById('btnBank');
+      const btnIcu = document.getElementById('btnIcu');
+      const viewBank = document.getElementById('viewBank');
+      const viewIcu = document.getElementById('viewIcu');
+
+      if (role === 'bank') {
+        btnBank.className = "px-4 py-1.5 text-xs font-semibold rounded bg-zinc-800 text-zinc-100 transition-all";
+        btnIcu.className = "px-4 py-1.5 text-xs font-semibold rounded text-zinc-500 hover:text-zinc-300 transition-all";
+        viewBank.classList.remove('hidden');
+        viewIcu.classList.add('hidden');
+      } else {
+        btnIcu.className = "px-4 py-1.5 text-xs font-semibold rounded bg-zinc-800 text-zinc-100 transition-all";
+        btnBank.className = "px-4 py-1.5 text-xs font-semibold rounded text-zinc-500 hover:text-zinc-300 transition-all";
+        viewIcu.classList.remove('hidden');
+        viewBank.classList.add('hidden');
+      }
+    }
+
     const client = mqtt.connect('wss://broker.hivemq.com:8884/mqtt');
     const TELEMETRY_TOPIC = 'pulsegrid/vault/vault_01/telemetry';
     const COMMAND_TOPIC = 'pulsegrid/vault/vault_01/command';
+    let auditRowCount = 0;
 
     client.on('connect', () => {
-      document.getElementById('connStatus').innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Online';
+      document.getElementById('connStatus').innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Live Edge Connection';
       client.subscribe(TELEMETRY_TOPIC);
     });
 
     function unlockVault() {
       const otp = document.getElementById('otpInput').value;
       if (otp.length < 4) {
-        alert("Please enter a valid OTP.");
+        alert("Invalid Authorization Code");
         return;
       }
 
-      // Publish command to Cloud
-      const payload = JSON.stringify({ action: "unlock", user_otp: otp });
-      client.publish(COMMAND_TOPIC, payload);
+      client.publish(COMMAND_TOPIC, JSON.stringify({ action: "unlock", user_otp: otp }));
 
       document.getElementById('otpInput').value = '';
-      document.getElementById('otpInput').placeholder = 'Vault Unlocked...';
+      document.getElementById('icuLockStatus').innerText = "VAULT STATUS: UNLOCKED (RE-LOCKING IN 10s...)";
+      document.getElementById('icuLockStatus').className = "mt-4 text-[10px] text-rose-500 font-medium tracking-wide animate-pulse";
 
-      // Auto-lock after 10 seconds
       setTimeout(() => {
         client.publish(COMMAND_TOPIC, JSON.stringify({ action: "lock" }));
-        document.getElementById('otpInput').placeholder = 'Enter OTP';
+        document.getElementById('icuLockStatus').innerText = "VAULT STATUS: SECURED";
+        document.getElementById('icuLockStatus').className = "mt-4 text-[10px] text-emerald-500 font-medium tracking-wide";
       }, 10000);
     }
 
@@ -112,19 +240,43 @@
         try {
           const data = JSON.parse(payload.toString());
 
-          document.getElementById('tempVal').innerText = data.temperature.toFixed(2);
-          document.getElementById('humVal').innerText = data.humidity.toFixed(2);
+          const tempString = data.temperature.toFixed(2);
+          document.getElementById('bankTemp').innerText = tempString;
+          document.getElementById('bankMotor').innerText = data.agitating ? 'Active (50Hz)' : 'Offline';
+          document.getElementById('bankLock').innerText = data.locked ? 'Secured' : 'UNLOCKED';
+          document.getElementById('bankLock').className = data.locked ? 'text-xl font-light text-emerald-400 mt-2' : 'text-xl font-light text-rose-500 mt-2 animate-pulse';
 
-          const motorSpan = document.getElementById('agitatorState');
-          motorSpan.innerText = data.agitating ? 'Running' : 'Stopped';
-          motorSpan.className = data.agitating ? 'text-zinc-100' : 'text-zinc-500';
+          const tempStatus = document.getElementById('tempStatus');
+          let isCompliant = true;
+          if (data.temperature >= 20.0 && data.temperature <= 24.0) {
+            tempStatus.innerHTML = '<span class="text-emerald-500">● Safe Zone</span>';
+          } else {
+            tempStatus.innerHTML = '<span class="text-rose-500 animate-pulse">● Thermal Excursion Warning</span>';
+            isCompliant = false;
+          }
 
-          const lockSpan = document.getElementById('lockStatus');
-          lockSpan.innerText = data.locked ? 'Secured' : 'UNLOCKED';
-          lockSpan.className = data.locked ? 'text-emerald-400' : 'text-rose-400';
+          auditRowCount++;
+          const time = new Date().toLocaleTimeString();
+          const tr = document.createElement('tr');
+          tr.className = "border-b border-zinc-800/50 w-full table table-fixed bg-zinc-900/20";
+          tr.innerHTML = `
+            <td class="py-2 w-1/4">${time}</td>
+            <td class="py-2 w-1/4 ${isCompliant ? '' : 'text-rose-500'}">${tempString}°C</td>
+            <td class="py-2 w-1/4">${data.agitating ? 'Running' : 'Halted'}</td>
+            <td class="py-2 w-1/4">
+              ${isCompliant && data.agitating ?
+                '<span class="bg-emerald-900/30 text-emerald-500 px-2 py-0.5 rounded text-[10px]">VERIFIED</span>' :
+                '<span class="bg-rose-900/30 text-rose-500 px-2 py-0.5 rounded text-[10px]">DEVIATION</span>'}
+            </td>
+          `;
 
+          const table = document.getElementById('auditTable');
+          table.prepend(tr);
+          if (auditRowCount > 15) {
+            table.removeChild(table.lastChild);
+          }
         } catch (err) {
-          console.log("Data parse error");
+          console.log("Telemetry parse error");
         }
       }
     });

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PulseGrid | Telemetry</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  </style>
+</head>
+<body class="bg-[#0a0a0a] text-zinc-400 min-h-screen p-6 md:p-12">
+  <div class="max-w-3xl mx-auto space-y-8">
+
+    <!-- Minimal Header -->
+    <header class="flex justify-between items-end border-b border-zinc-800 pb-4">
+      <div>
+        <h1 class="text-lg font-semibold text-zinc-100 tracking-wide">PULSEGRID</h1>
+        <p class="text-xs text-zinc-500 mt-1">NODE: PG-001</p>
+      </div>
+      <div id="connStatus" class="text-xs text-zinc-500 flex items-center gap-2">
+        <span class="w-1.5 h-1.5 rounded-full bg-zinc-600 animate-pulse" id="statusDot"></span>
+        Connecting...
+      </div>
+    </header>
+
+    <!-- Data Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+      <!-- Telemetry Card -->
+      <div class="bg-[#111] border border-zinc-800 rounded p-6">
+        <h2 class="text-[10px] uppercase tracking-widest text-zinc-500 mb-6">Environment</h2>
+
+        <div class="space-y-6">
+          <div>
+            <div class="text-xs text-zinc-500 mb-1">Temperature</div>
+            <div class="flex items-baseline gap-1">
+              <span id="tempVal" class="text-4xl font-light text-zinc-100">--</span>
+              <span class="text-sm text-zinc-500">°C</span>
+            </div>
+          </div>
+
+          <div>
+            <div class="text-xs text-zinc-500 mb-1">Relative Humidity</div>
+            <div class="flex items-baseline gap-1">
+              <span id="humVal" class="text-2xl font-light text-zinc-300">--</span>
+              <span class="text-xs text-zinc-500">%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hardware Status Card -->
+      <div class="bg-[#111] border border-zinc-800 rounded p-6">
+        <h2 class="text-[10px] uppercase tracking-widest text-zinc-500 mb-6">Hardware Status</h2>
+
+        <div class="space-y-4 text-sm">
+          <div class="flex justify-between items-center py-2 border-b border-zinc-800/50">
+            <span class="text-zinc-400">Agitator Motor</span>
+            <span class="text-zinc-100" id="agitatorState">Running</span>
+          </div>
+
+          <div class="flex justify-between items-center py-2 border-b border-zinc-800/50">
+            <span class="text-zinc-400">Vault Security</span>
+            <span class="text-zinc-100">Secured</span>
+          </div>
+
+          <div class="flex justify-between items-center py-2">
+            <span class="text-zinc-400">Data Protocol</span>
+            <span class="text-zinc-500">MQTT over WSS</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const client = mqtt.connect('wss://broker.hivemq.com:8884/mqtt');
+
+    client.on('connect', () => {
+      document.getElementById('connStatus').innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-zinc-300"></span> Online';
+      client.subscribe('pulsegrid/vault/vault_01/telemetry');
+    });
+
+    client.on('message', (topic, payload) => {
+      try {
+        const data = JSON.parse(payload.toString());
+        document.getElementById('tempVal').innerText = data.temperature.toFixed(2);
+        document.getElementById('humVal').innerText = data.humidity.toFixed(2);
+      } catch (err) {
+        console.log("Data parse error");
+      }
+    });
+  </script>
+</body>
+</html>

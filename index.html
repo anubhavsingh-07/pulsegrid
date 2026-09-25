@@ -15,6 +15,7 @@
 <body class="bg-[#0a0a0a] text-zinc-400 min-h-screen p-4 md:p-8">
   <div class="max-w-6xl mx-auto space-y-6">
 
+    <!-- HEADER -->
     <header class="flex flex-col md:flex-row justify-between items-start md:items-end border-b border-zinc-800 pb-4 gap-4">
       <div>
         <h1 class="text-xl font-bold text-zinc-100 tracking-wider">PULSEGRID</h1>
@@ -23,12 +24,16 @@
         </div>
       </div>
 
+      <!-- ROLE SWITCHER -->
       <div class="flex bg-[#111] border border-zinc-800 rounded p-1">
         <button onclick="switchRole('bank')" id="btnBank" class="px-4 py-1.5 text-xs font-semibold rounded bg-zinc-800 text-zinc-100 transition-all">Central Blood Bank</button>
         <button onclick="switchRole('icu')" id="btnIcu" class="px-4 py-1.5 text-xs font-semibold rounded text-zinc-500 hover:text-zinc-300 transition-all">Hospital ICU</button>
       </div>
     </header>
 
+    <!-- ========================================== -->
+    <!-- VIEW 1: CENTRAL BLOOD BANK                 -->
+    <!-- ========================================== -->
     <div id="viewBank" class="space-y-6 block">
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -52,6 +57,7 @@
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Live Inventory Table -->
         <div class="bg-[#111] border border-zinc-800 rounded p-6">
           <div class="flex justify-between items-center mb-4">
             <h2 class="text-[10px] uppercase tracking-widest text-zinc-500">Live Platelet Inventory</h2>
@@ -76,6 +82,7 @@
           </div>
         </div>
 
+        <!-- Immutable Audit Ledger -->
         <div class="bg-[#111] border border-zinc-800 rounded p-6">
           <div class="flex justify-between items-center mb-4">
             <h2 class="text-[10px] uppercase tracking-widest text-zinc-500">Transit Audit Ledger (PG-001)</h2>
@@ -101,23 +108,32 @@
       </div>
     </div>
 
+    <!-- ========================================== -->
+    <!-- VIEW 2: HOSPITAL ICU RECEIVING             -->
+    <!-- ========================================== -->
     <div id="viewIcu" class="space-y-6 hidden">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto mt-6">
 
+        <!-- Requisition Panel -->
         <div class="bg-[#111] border border-zinc-800 rounded-xl p-6 shadow-2xl">
           <h2 class="text-sm font-bold text-zinc-100 mb-4">Emergency Requisition</h2>
           <div class="space-y-4 text-sm">
             <div>
               <label class="text-xs text-zinc-500 block mb-1">Blood Group Needed</label>
-              <select class="w-full bg-[#0a0a0a] border border-zinc-700 rounded px-3 py-2 text-zinc-200 outline-none">
+              <select class="w-full bg-[#0a0a0a] border border-zinc-700 rounded px-3 py-2 text-zinc-200 outline-none focus:border-emerald-500/50">
                 <option>O+ (Positive)</option>
+                <option>O- (Negative)</option>
                 <option>A+ (Positive)</option>
+                <option>A- (Negative)</option>
+                <option>B+ (Positive)</option>
                 <option>B- (Negative)</option>
+                <option>AB+ (Positive)</option>
+                <option>AB- (Negative)</option>
               </select>
             </div>
             <div>
               <label class="text-xs text-zinc-500 block mb-1">Component Type</label>
-              <select class="w-full bg-[#0a0a0a] border border-zinc-700 rounded px-3 py-2 text-zinc-200 outline-none">
+              <select class="w-full bg-[#0a0a0a] border border-zinc-700 rounded px-3 py-2 text-zinc-200 outline-none focus:border-emerald-500/50">
                 <option>SDP (Single Donor Platelets)</option>
                 <option>RDP (Random Donor Platelets)</option>
               </select>
@@ -128,6 +144,7 @@
           </div>
         </div>
 
+        <!-- Vault Unlock Panel -->
         <div class="bg-[#111] border border-zinc-800 rounded-xl p-6 shadow-2xl text-center flex flex-col justify-center">
           <div class="w-12 h-12 rounded-full bg-emerald-950 border border-emerald-800 flex items-center justify-center mx-auto mb-4">
             <svg class="w-6 h-6 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
@@ -154,38 +171,42 @@
 
   <!-- APPLICATION LOGIC -->
   <script>
+    // 1. Populate Inventory
     window.onload = () => {
       const tbody = document.getElementById('inventoryTable');
-      plateletInventory.forEach(unit => {
-        let statusBadge = '';
-        let btnDisabled = '';
+      if (typeof plateletInventory !== 'undefined') {
+        plateletInventory.forEach(unit => {
+          let statusBadge = '';
+          let btnDisabled = '';
 
-        if (unit.status === 'Available') {
-          statusBadge = '<span class="text-emerald-400 bg-emerald-900/30 px-2 py-0.5 rounded">Available</span>';
-        } else if (unit.status === 'Critical_Expiry') {
-          statusBadge = '<span class="text-amber-400 bg-amber-900/30 px-2 py-0.5 rounded">Expiring < 24h</span>';
-        } else if (unit.status === 'Reserved_Transit') {
-          statusBadge = '<span class="text-blue-400 bg-blue-900/30 px-2 py-0.5 rounded">In Transit</span>';
-          btnDisabled = 'disabled opacity-50 cursor-not-allowed';
-        } else {
-          statusBadge = '<span class="text-rose-400 bg-rose-900/30 px-2 py-0.5 rounded">Expired</span>';
-          btnDisabled = 'disabled opacity-50 cursor-not-allowed';
-        }
+          if (unit.status === 'Available') {
+            statusBadge = '<span class="text-emerald-400 bg-emerald-900/30 px-2 py-0.5 rounded">Available</span>';
+          } else if (unit.status === 'Critical_Expiry') {
+            statusBadge = '<span class="text-amber-400 bg-amber-900/30 px-2 py-0.5 rounded">Expiring < 24h</span>';
+          } else if (unit.status === 'Reserved_Transit') {
+            statusBadge = '<span class="text-blue-400 bg-blue-900/30 px-2 py-0.5 rounded">In Transit</span>';
+            btnDisabled = 'disabled opacity-50 cursor-not-allowed';
+          } else {
+            statusBadge = '<span class="text-rose-400 bg-rose-900/30 px-2 py-0.5 rounded">Expired</span>';
+            btnDisabled = 'disabled opacity-50 cursor-not-allowed';
+          }
 
-        tbody.innerHTML += `
-          <tr class="border-b border-zinc-800/50 hover:bg-zinc-900/50 transition-colors">
-            <td class="py-2 font-mono text-zinc-300">${unit.unit_id}</td>
-            <td class="py-2">${unit.type}</td>
-            <td class="py-2 font-bold">${unit.group}</td>
-            <td class="py-2">${statusBadge}</td>
-            <td class="py-2 text-right">
-              <button onclick="alert('Dispatching ${unit.unit_id} via Vault PG-001. OTP: 1234 generated.')" ${btnDisabled} class="text-[10px] bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-2 py-1 rounded transition-colors">Dispatch</button>
-            </td>
-          </tr>
-        `;
-      });
+          tbody.innerHTML += `
+            <tr class="border-b border-zinc-800/50 hover:bg-zinc-900/50 transition-colors">
+              <td class="py-2 font-mono text-zinc-300">${unit.unit_id}</td>
+              <td class="py-2">${unit.type}</td>
+              <td class="py-2 font-bold">${unit.group}</td>
+              <td class="py-2">${statusBadge}</td>
+              <td class="py-2 text-right">
+                <button onclick="alert('Dispatching ${unit.unit_id} via Vault PG-001. OTP: 1234 generated.')" ${btnDisabled} class="text-[10px] bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-2 py-1 rounded transition-colors">Dispatch</button>
+              </td>
+            </tr>
+          `;
+        });
+      }
     };
 
+    // 2. Navigation
     function switchRole(role) {
       const btnBank = document.getElementById('btnBank');
       const btnIcu = document.getElementById('btnIcu');
@@ -205,6 +226,7 @@
       }
     }
 
+    // 3. MQTT Logic
     const client = mqtt.connect('wss://broker.hivemq.com:8884/mqtt');
     const TELEMETRY_TOPIC = 'pulsegrid/vault/vault_01/telemetry';
     const COMMAND_TOPIC = 'pulsegrid/vault/vault_01/command';

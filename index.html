@@ -13,7 +13,6 @@
 <body class="bg-[#0a0a0a] text-zinc-400 min-h-screen p-6 md:p-12">
   <div class="max-w-3xl mx-auto space-y-8">
 
-    <!-- Minimal Header -->
     <header class="flex justify-between items-end border-b border-zinc-800 pb-4">
       <div>
         <h1 class="text-lg font-semibold text-zinc-100 tracking-wide">PULSEGRID</h1>
@@ -25,13 +24,10 @@
       </div>
     </header>
 
-    <!-- Data Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-      <!-- Telemetry Card -->
       <div class="bg-[#111] border border-zinc-800 rounded p-6">
         <h2 class="text-[10px] uppercase tracking-widest text-zinc-500 mb-6">Environment</h2>
-
         <div class="space-y-6">
           <div>
             <div class="text-xs text-zinc-500 mb-1">Temperature</div>
@@ -40,7 +36,6 @@
               <span class="text-sm text-zinc-500">°C</span>
             </div>
           </div>
-
           <div>
             <div class="text-xs text-zinc-500 mb-1">Relative Humidity</div>
             <div class="flex items-baseline gap-1">
@@ -51,21 +46,18 @@
         </div>
       </div>
 
-      <!-- Hardware Status Card -->
       <div class="bg-[#111] border border-zinc-800 rounded p-6">
         <h2 class="text-[10px] uppercase tracking-widest text-zinc-500 mb-6">Hardware Status</h2>
-
         <div class="space-y-4 text-sm">
           <div class="flex justify-between items-center py-2 border-b border-zinc-800/50">
             <span class="text-zinc-400">Agitator Motor</span>
-            <span class="text-zinc-100" id="agitatorState">Running</span>
+            <!-- Changed default text to Offline -->
+            <span class="text-zinc-500" id="agitatorState">Offline</span>
           </div>
-
           <div class="flex justify-between items-center py-2 border-b border-zinc-800/50">
             <span class="text-zinc-400">Vault Security</span>
             <span class="text-zinc-100">Secured</span>
           </div>
-
           <div class="flex justify-between items-center py-2">
             <span class="text-zinc-400">Data Protocol</span>
             <span class="text-zinc-500">MQTT over WSS</span>
@@ -86,8 +78,20 @@
     client.on('message', (topic, payload) => {
       try {
         const data = JSON.parse(payload.toString());
+
+        // Update Temp & Humidity
         document.getElementById('tempVal').innerText = data.temperature.toFixed(2);
         document.getElementById('humVal').innerText = data.humidity.toFixed(2);
+
+        // Dynamically update Motor Status
+        const motorSpan = document.getElementById('agitatorState');
+        if (data.agitating) {
+          motorSpan.innerText = 'Running';
+          motorSpan.className = 'text-zinc-100';
+        } else {
+          motorSpan.innerText = 'Stopped';
+          motorSpan.className = 'text-rose-400';
+        }
       } catch (err) {
         console.log("Data parse error");
       }

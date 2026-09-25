@@ -19,13 +19,13 @@
         <p class="text-xs text-zinc-500 mt-1">NODE: PG-001</p>
       </div>
       <div id="connStatus" class="text-xs text-zinc-500 flex items-center gap-2">
-        <span class="w-1.5 h-1.5 rounded-full bg-zinc-600 animate-pulse" id="statusDot"></span>
-        Connecting...
+        <span class="w-1.5 h-1.5 rounded-full bg-zinc-600 animate-pulse"></span> Connecting...
       </div>
     </header>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
+      <!-- Telemetry Environment -->
       <div class="bg-[#111] border border-zinc-800 rounded p-6">
         <h2 class="text-[10px] uppercase tracking-widest text-zinc-500 mb-6">Environment</h2>
         <div class="space-y-6">
@@ -46,21 +46,30 @@
         </div>
       </div>
 
+      <!-- Access Control -->
       <div class="bg-[#111] border border-zinc-800 rounded p-6">
-        <h2 class="text-[10px] uppercase tracking-widest text-zinc-500 mb-6">Hardware Status</h2>
+        <h2 class="text-[10px] uppercase tracking-widest text-zinc-500 mb-6">Access & Status</h2>
+
         <div class="space-y-4 text-sm">
           <div class="flex justify-between items-center py-2 border-b border-zinc-800/50">
-            <span class="text-zinc-400">Agitator Motor</span>
-            <!-- Changed default text to Offline -->
-            <span class="text-zinc-500" id="agitatorState">Offline</span>
-          </div>
-          <div class="flex justify-between items-center py-2 border-b border-zinc-800/50">
             <span class="text-zinc-400">Vault Security</span>
-            <span class="text-zinc-100">Secured</span>
+            <span id="lockStatus" class="text-emerald-400">Secured</span>
           </div>
+
+          <!-- Remote Unlock UI -->
+          <div class="py-2 border-b border-zinc-800/50">
+            <label class="text-xs text-zinc-500 block mb-2">Hospital Receiving OTP</label>
+            <div class="flex gap-2">
+              <input type="text" id="otpInput" placeholder="Enter OTP" class="bg-[#1a1a1a] border border-zinc-700 rounded px-3 py-1.5 text-sm text-zinc-200 w-full focus:outline-none focus:border-emerald-500/50">
+              <button onclick="unlockVault()" class="bg-emerald-900/30 text-emerald-400 border border-emerald-800/50 rounded px-4 py-1.5 text-xs font-bold hover:bg-emerald-800/40 transition-colors">
+                AUTHORIZE
+              </button>
+            </div>
+          </div>
+
           <div class="flex justify-between items-center py-2">
-            <span class="text-zinc-400">Data Protocol</span>
-            <span class="text-zinc-500">MQTT over WSS</span>
+            <span class="text-zinc-400">Agitator Motor</span>
+            <span class="text-zinc-100" id="agitatorState">Running</span>
           </div>
         </div>
       </div>
@@ -69,31 +78,54 @@
 
   <script>
     const client = mqtt.connect('wss://broker.hivemq.com:8884/mqtt');
+    const TELEMETRY_TOPIC = 'pulsegrid/vault/vault_01/telemetry';
+    const COMMAND_TOPIC = 'pulsegrid/vault/vault_01/command';
 
     client.on('connect', () => {
-      document.getElementById('connStatus').innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-zinc-300"></span> Online';
-      client.subscribe('pulsegrid/vault/vault_01/telemetry');
+      document.getElementById('connStatus').innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Online';
+      client.subscribe(TELEMETRY_TOPIC);
     });
 
+    function unlockVault() {
+      const otp = document.getElementById('otpInput').value;
+      if (otp.length < 4) {
+        alert("Please enter a valid OTP.");
+        return;
+      }
+
+      // Publish command to Cloud
+      const payload = JSON.stringify({ action: "unlock", user_otp: otp });
+      client.publish(COMMAND_TOPIC, payload);
+
+      document.getElementById('otpInput').value = '';
+      document.getElementById('otpInput').placeholder = 'Vault Unlocked...';
+
+      // Auto-lock after 10 seconds
+      setTimeout(() => {
+        client.publish(COMMAND_TOPIC, JSON.stringify({ action: "lock" }));
+        document.getElementById('otpInput').placeholder = 'Enter OTP';
+      }, 10000);
+    }
+
     client.on('message', (topic, payload) => {
-      try {
-        const data = JSON.parse(payload.toString());
+      if (topic === TELEMETRY_TOPIC) {
+        try {
+          const data = JSON.parse(payload.toString());
 
-        // Update Temp & Humidity
-        document.getElementById('tempVal').innerText = data.temperature.toFixed(2);
-        document.getElementById('humVal').innerText = data.humidity.toFixed(2);
+          document.getElementById('tempVal').innerText = data.temperature.toFixed(2);
+          document.getElementById('humVal').innerText = data.humidity.toFixed(2);
 
-        // Dynamically update Motor Status
-        const motorSpan = document.getElementById('agitatorState');
-        if (data.agitating) {
-          motorSpan.innerText = 'Running';
-          motorSpan.className = 'text-zinc-100';
-        } else {
-          motorSpan.innerText = 'Stopped';
-          motorSpan.className = 'text-rose-400';
+          const motorSpan = document.getElementById('agitatorState');
+          motorSpan.innerText = data.agitating ? 'Running' : 'Stopped';
+          motorSpan.className = data.agitating ? 'text-zinc-100' : 'text-zinc-500';
+
+          const lockSpan = document.getElementById('lockStatus');
+          lockSpan.innerText = data.locked ? 'Secured' : 'UNLOCKED';
+          lockSpan.className = data.locked ? 'text-emerald-400' : 'text-rose-400';
+
+        } catch (err) {
+          console.log("Data parse error");
         }
-      } catch (err) {
-        console.log("Data parse error");
       }
     });
   </script>

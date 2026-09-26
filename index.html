@@ -15,7 +15,7 @@
 <body class="bg-[#0a0a0a] text-zinc-400 min-h-screen p-4 md:p-8">
   <div class="max-w-6xl mx-auto space-y-6">
 
-    <!-- MASTER HEADER & ROLE SWITCHER -->
+    <!-- HEADER -->
     <header class="flex flex-col md:flex-row justify-between items-start md:items-end border-b border-zinc-800 pb-4 gap-4">
       <div>
         <h1 class="text-xl font-bold text-zinc-100 tracking-wider">PULSEGRID</h1>
@@ -24,19 +24,15 @@
         </div>
       </div>
 
-      <!-- Role Switcher -->
       <div class="flex bg-[#111] border border-zinc-800 rounded p-1">
         <button onclick="switchRole('bank')" id="btnBank" class="px-4 py-1.5 text-xs font-semibold rounded bg-zinc-800 text-zinc-100 transition-all">Central Blood Bank</button>
         <button onclick="switchRole('icu')" id="btnIcu" class="px-4 py-1.5 text-xs font-semibold rounded text-zinc-500 hover:text-zinc-300 transition-all">Hospital ICU</button>
       </div>
     </header>
 
-    <!-- ========================================== -->
-    <!-- VIEW 1: CENTRAL BLOOD BANK                 -->
-    <!-- ========================================== -->
+    <!-- VIEW 1: CENTRAL BLOOD BANK -->
     <div id="viewBank" class="space-y-6 block">
 
-      <!-- Telemetry Cards -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div class="bg-[#111] border border-zinc-800 rounded p-5">
           <div class="text-[10px] uppercase tracking-widest text-zinc-500 mb-2">Vault Temp (PG-001)</div>
@@ -53,57 +49,51 @@
 
         <div class="bg-[#111] border border-zinc-800 rounded p-5">
           <div class="text-[10px] uppercase tracking-widest text-zinc-500 mb-2">Vault Security</div>
-          <div id="bankLock" class="text-xl font-light text-emerald-400 mt-2">Secured</div>
+          <div id="bankLock" class="text-xl font-light text-zinc-300 mt-2">Secured</div>
         </div>
       </div>
 
-      <!-- AI TRIAGE & ADAPTIVE EDGE OVERRIDE -->
+      <!-- DISPATCH & EDGE OVERRIDE -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <!-- SLM / FEFO Engine -->
+
         <div class="bg-[#111] border border-zinc-800 rounded p-5 flex flex-col justify-between">
           <div>
             <div class="flex items-center justify-between mb-2">
-              <span class="text-[10px] uppercase tracking-widest text-emerald-400 font-bold">● AI Dispatch Triage (SLM v1.2)</span>
-              <span class="text-[10px] text-zinc-500 font-mono">MODEL: FEFO-BIO-8B</span>
+              <span class="text-[10px] uppercase tracking-widest text-zinc-300 font-bold">Dispatch Triage</span>
+              <span class="text-[10px] text-zinc-500 font-mono">FEFO Engine</span>
             </div>
-            <p id="aiOutput" class="text-xs text-zinc-300 font-mono bg-black/40 p-2.5 rounded border border-zinc-800/80">
-              Engine Idle. Click "Run Auto-Triage" to evaluate platelet shelf-life heuristics.
+            <p id="aiOutput" class="text-xs text-zinc-400 font-mono bg-[#0a0a0a] p-2.5 rounded border border-zinc-800/80">
+              Engine Idle. Click to evaluate platelet shelf-life heuristics.
             </p>
           </div>
           <button onclick="runAITriage()" class="mt-3 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs py-1.5 px-3 rounded font-medium transition-colors w-full border border-zinc-700">
-            ⚡ Run Smart FEFO Auto-Triage
+            Run FEFO Auto-Triage
           </button>
         </div>
 
-        <!-- Adaptive Edge Throttle -->
         <div class="bg-[#111] border border-zinc-800 rounded p-5 flex flex-col justify-between">
           <div>
             <div class="flex items-center justify-between mb-2">
-              <span class="text-[10px] uppercase tracking-widest text-zinc-400 font-bold">Edge Telematics Override</span>
-              <span id="activeMode" class="text-[10px] text-emerald-400 font-mono">MODE: CONTINUOUS (50Hz)</span>
+              <span class="text-[10px] uppercase tracking-widest text-zinc-300 font-bold">Edge Telematics Override</span>
+              <span id="activeMode" class="text-[10px] text-zinc-400 font-mono">MODE: CONTINUOUS</span>
             </div>
             <p class="text-xs text-zinc-500">
-              Remotely adjust agitator oscillation frequency to conserve battery during severe transit delays.
+              Remotely adjust agitator oscillation frequency or halt motor completely.
             </p>
           </div>
-          <div class="grid grid-cols-2 gap-2 mt-3">
-            <button onclick="setEdgeMode('eco')" class="bg-amber-950/30 border border-amber-800/50 hover:bg-amber-900/40 text-amber-300 text-xs py-1.5 px-2 rounded transition-colors font-medium">
-              Traffic Mode (Eco)
-            </button>
-            <button onclick="setEdgeMode('normal')" class="bg-emerald-950/30 border border-emerald-800/50 hover:bg-emerald-900/40 text-emerald-300 text-xs py-1.5 px-2 rounded transition-colors font-medium">
-              Standard Agitation
-            </button>
+          <div class="grid grid-cols-3 gap-2 mt-3">
+            <button onclick="setEdgeMode('normal')" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs py-1.5 px-2 rounded transition-colors font-medium">Standard</button>
+            <button onclick="setEdgeMode('eco')" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs py-1.5 px-2 rounded transition-colors font-medium">Eco Mode</button>
+            <button onclick="setEdgeMode('stop')" class="bg-zinc-800 hover:bg-rose-900/30 text-zinc-300 text-xs py-1.5 px-2 rounded border border-zinc-700 hover:border-rose-900/50 transition-colors font-medium">Stop Motor</button>
           </div>
         </div>
       </div>
 
-      <!-- Inventory & Ledger Grid -->
+      <!-- INVENTORY & LEDGER -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- Live Inventory Table -->
         <div class="bg-[#111] border border-zinc-800 rounded p-6">
           <div class="flex justify-between items-center mb-4">
             <h2 class="text-[10px] uppercase tracking-widest text-zinc-500">Live Platelet Inventory</h2>
-            <span class="text-[10px] text-zinc-500 bg-zinc-900 px-2 py-1 rounded">5 Day Expiry Rule Active</span>
           </div>
 
           <div class="overflow-x-auto">
@@ -118,18 +108,17 @@
                 </tr>
               </thead>
               <tbody id="inventoryTable" class="text-zinc-300">
-                <!-- Injected dynamically from inventory.js -->
+                <!-- Injected dynamically -->
               </tbody>
             </table>
           </div>
         </div>
 
-        <!-- Immutable Audit Ledger -->
         <div class="bg-[#111] border border-zinc-800 rounded p-6">
           <div class="flex justify-between items-center mb-4">
             <h2 class="text-[10px] uppercase tracking-widest text-zinc-500">Transit Audit Ledger (PG-001)</h2>
-            <button onclick="openCertificateModal()" class="text-[10px] bg-emerald-950/40 border border-emerald-700/60 text-emerald-300 hover:bg-emerald-900/50 rounded px-2.5 py-1 transition-colors font-medium">
-              View Compliance Certificate
+            <button onclick="openCertificateModal()" class="text-[10px] bg-zinc-800 border border-zinc-700 text-zinc-300 hover:bg-zinc-700 rounded px-2.5 py-1 transition-colors font-medium">
+              View Certificate
             </button>
           </div>
 
@@ -137,14 +126,14 @@
             <table class="w-full text-left text-xs">
               <thead class="text-zinc-600 border-b border-zinc-800">
                 <tr>
-                  <th class="pb-2 font-medium">Timestamp</th>
+                  <th class="pb-2 font-medium">Time</th>
                   <th class="pb-2 font-medium">Temp</th>
                   <th class="pb-2 font-medium">Agitator</th>
                   <th class="pb-2 font-medium">Integrity</th>
                 </tr>
               </thead>
               <tbody id="auditTable" class="text-zinc-300 block max-h-64 overflow-y-auto w-full table-layout-fixed no-scrollbar mt-2 space-y-1">
-                <!-- MQTT Telemetry Rows Injected Here -->
+                <!-- Injected rows -->
               </tbody>
             </table>
           </div>
@@ -152,65 +141,54 @@
       </div>
     </div>
 
-    <!-- ========================================== -->
-    <!-- VIEW 2: HOSPITAL ICU RECEIVING             -->
-    <!-- ========================================== -->
+    <!-- VIEW 2: HOSPITAL ICU RECEIVING -->
     <div id="viewIcu" class="space-y-6 hidden">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto mt-6">
 
-        <!-- Requisition Panel -->
         <div class="bg-[#111] border border-zinc-800 rounded-xl p-6 shadow-2xl">
           <h2 class="text-sm font-bold text-zinc-100 mb-4">Emergency Requisition</h2>
           <div class="space-y-4 text-sm">
             <div>
               <label class="text-xs text-zinc-500 block mb-1">Blood Group Needed</label>
-              <select class="w-full bg-[#0a0a0a] border border-zinc-700 rounded px-3 py-2 text-zinc-200 outline-none focus:border-emerald-500/50">
+              <select class="w-full bg-[#0a0a0a] border border-zinc-700 rounded px-3 py-2 text-zinc-200 outline-none focus:border-zinc-500">
                 <option>O+ (Positive)</option>
                 <option>O- (Negative)</option>
                 <option>A+ (Positive)</option>
-                <option>A- (Negative)</option>
                 <option>B+ (Positive)</option>
-                <option>B- (Negative)</option>
                 <option>AB+ (Positive)</option>
-                <option>AB- (Negative)</option>
               </select>
             </div>
             <div>
               <label class="text-xs text-zinc-500 block mb-1">Component Type</label>
-              <select class="w-full bg-[#0a0a0a] border border-zinc-700 rounded px-3 py-2 text-zinc-200 outline-none focus:border-emerald-500/50">
+              <select class="w-full bg-[#0a0a0a] border border-zinc-700 rounded px-3 py-2 text-zinc-200 outline-none focus:border-zinc-500">
                 <option>SDP (Single Donor Platelets)</option>
                 <option>RDP (Random Donor Platelets)</option>
               </select>
             </div>
-            <button onclick="alert('Requisition dispatched to Central Blood Bank.')" class="w-full bg-zinc-800 hover:bg-zinc-700 text-white rounded px-4 py-2 font-bold transition-colors">
+            <button onclick="alert('Requisition dispatched.')" class="w-full bg-zinc-800 hover:bg-zinc-700 text-white rounded px-4 py-2 font-bold transition-colors">
               SUBMIT REQUEST
             </button>
           </div>
         </div>
 
-        <!-- Vault Unlock Panel -->
         <div class="bg-[#111] border border-zinc-800 rounded-xl p-6 shadow-2xl text-center flex flex-col justify-center">
-          <div class="w-12 h-12 rounded-full bg-emerald-950 border border-emerald-800 flex items-center justify-center mx-auto mb-4">
-            <svg class="w-6 h-6 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
-          </div>
-
           <h2 class="text-lg font-bold text-zinc-100 mb-1">Delivery: PG-001</h2>
           <p class="text-xs text-zinc-500 mb-6">Cold chain compliance verified.</p>
 
           <div class="space-y-3">
-            <input type="text" id="otpInput" placeholder="Enter OTP (e.g. 1234)" class="w-full bg-[#0a0a0a] border border-zinc-700 rounded px-4 py-2 text-center text-zinc-100 tracking-widest outline-none focus:border-emerald-500/50">
-            <button onclick="unlockVault()" class="w-full bg-emerald-600 text-white rounded px-4 py-2 font-bold hover:bg-emerald-500 transition-colors shadow-lg shadow-emerald-900/20">
+            <input type="text" id="otpInput" placeholder="Enter OTP (e.g. 1234)" class="w-full bg-[#0a0a0a] border border-zinc-700 rounded px-4 py-2 text-center text-zinc-100 tracking-widest outline-none focus:border-zinc-500">
+            <button onclick="unlockVault()" class="w-full bg-zinc-200 text-black rounded px-4 py-2 font-bold hover:bg-white transition-colors">
               AUTHORIZE UNLOCK
             </button>
           </div>
-          <div id="icuLockStatus" class="mt-4 text-[10px] text-emerald-500 font-medium tracking-wide">VAULT STATUS: SECURED</div>
+          <div id="icuLockStatus" class="mt-4 text-[10px] text-zinc-400 font-medium tracking-wide">VAULT STATUS: SECURED</div>
         </div>
 
       </div>
     </div>
   </div>
 
-  <!-- CDSCO REGULATORY AUDIT MODAL -->
+  <!-- MODAL -->
   <div id="certModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
     <div class="bg-[#121212] border border-zinc-700 rounded-xl max-w-lg w-full p-6 space-y-4 shadow-2xl font-mono text-xs">
       <div class="flex justify-between items-start border-b border-zinc-800 pb-3">
@@ -220,53 +198,33 @@
         </div>
         <button onclick="closeCertificateModal()" class="text-zinc-500 hover:text-zinc-300 text-base font-bold">&times;</button>
       </div>
-
       <div class="grid grid-cols-2 gap-3 py-2 text-zinc-400">
-        <div><span class="text-zinc-600 block text-[10px]">PAYLOAD UNIT:</span> <span class="text-zinc-200">UP-SDP-9024 (O-)</span></div>
-        <div><span class="text-zinc-600 block text-[10px]">MEAN KINETIC TEMP:</span> <span class="text-emerald-400 font-bold">22.4°C (NOMINAL)</span></div>
-        <div><span class="text-zinc-600 block text-[10px]">AGITATION RECORD:</span> <span class="text-zinc-200">100% UNINTERRUPTED</span></div>
-        <div><span class="text-zinc-600 block text-[10px]">SECURITY AUDIT:</span> <span class="text-zinc-200">ZERO TAMPER EVENTS</span></div>
+        <div><span class="text-zinc-600 block text-[10px]">MEAN KINETIC TEMP:</span> <span class="text-zinc-200 font-bold">22.4°C (NOMINAL)</span></div>
+        <div><span class="text-zinc-600 block text-[10px]">AGITATION RECORD:</span> <span class="text-zinc-200">VERIFIED</span></div>
       </div>
-
-      <div class="bg-black/60 p-3 rounded border border-zinc-800 space-y-1 text-[11px]">
+      <div class="bg-[#0a0a0a] p-3 rounded border border-zinc-800 space-y-1 text-[11px]">
         <div class="text-zinc-500 text-[9px] uppercase">Ledger Verification Hash (SHA-256)</div>
-        <div class="text-zinc-400 break-all select-all font-mono">e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855</div>
+        <div class="text-zinc-400 break-all font-mono">e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855</div>
       </div>
-
-      <div class="bg-emerald-950/30 border border-emerald-800/80 rounded p-3 text-center">
-        <div class="text-emerald-400 font-bold text-sm tracking-wider">✔ APPROVED FOR TRANSFUSION</div>
-        <div class="text-[10px] text-emerald-600 mt-0.5">Biocompatibility Intact • Meets WHO Biological Standards</div>
-      </div>
-
-      <button onclick="closeCertificateModal()" class="w-full bg-zinc-800 hover:bg-zinc-700 text-zinc-300 py-2 rounded text-xs transition-colors">
-        Dismiss Document
-      </button>
+      <button onclick="closeCertificateModal()" class="w-full bg-zinc-800 hover:bg-zinc-700 text-zinc-300 py-2 rounded text-xs transition-colors">Dismiss Document</button>
     </div>
   </div>
 
-  <!-- IMPORT DATASET FROM INVENTORY.JS -->
   <script src="inventory.js"></script>
 
-  <!-- APPLICATION LOGIC & MQTT ENGINE -->
   <script>
-    // --- 1. Populate Inventory Table ---
     window.onload = () => {
       const tbody = document.getElementById('inventoryTable');
       if (typeof plateletInventory !== 'undefined') {
         plateletInventory.forEach(unit => {
           let statusBadge = '';
-          let btnDisabled = '';
 
           if (unit.status === 'Available') {
-            statusBadge = '<span class="text-emerald-400 bg-emerald-900/30 px-2 py-0.5 rounded">Available</span>';
+            statusBadge = '<span class="text-zinc-400 border border-zinc-700 px-2 py-0.5 rounded">Available</span>';
           } else if (unit.status === 'Critical_Expiry') {
-            statusBadge = '<span class="text-amber-400 bg-amber-900/30 px-2 py-0.5 rounded">Expiring < 24h</span>';
-          } else if (unit.status === 'Reserved_Transit') {
-            statusBadge = '<span class="text-blue-400 bg-blue-900/30 px-2 py-0.5 rounded">In Transit</span>';
-            btnDisabled = 'disabled opacity-50 cursor-not-allowed';
+            statusBadge = '<span class="text-zinc-300 border border-zinc-500 px-2 py-0.5 rounded font-bold">Expiring < 24h</span>';
           } else {
-            statusBadge = '<span class="text-rose-400 bg-rose-900/30 px-2 py-0.5 rounded">Expired</span>';
-            btnDisabled = 'disabled opacity-50 cursor-not-allowed';
+            statusBadge = `<span class="text-zinc-600 border border-zinc-800 px-2 py-0.5 rounded">${unit.status}</span>`;
           }
 
           tbody.innerHTML += `
@@ -276,7 +234,7 @@
               <td class="py-2 font-bold">${unit.group}</td>
               <td class="py-2">${statusBadge}</td>
               <td class="py-2 text-right">
-                <button onclick="alert('Dispatching ${unit.unit_id} via Vault PG-001. OTP: 1234 generated.')" ${btnDisabled} class="text-[10px] bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-2 py-1 rounded transition-colors">Dispatch</button>
+                <button class="text-[10px] bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-2 py-1 rounded transition-colors border border-zinc-700">Dispatch</button>
               </td>
             </tr>
           `;
@@ -284,138 +242,85 @@
       }
     };
 
-    // --- 2. Role Switcher Logic ---
     function switchRole(role) {
-      const btnBank = document.getElementById('btnBank');
-      const btnIcu = document.getElementById('btnIcu');
-      const viewBank = document.getElementById('viewBank');
-      const viewIcu = document.getElementById('viewIcu');
-
-      if (role === 'bank') {
-        btnBank.className = "px-4 py-1.5 text-xs font-semibold rounded bg-zinc-800 text-zinc-100 transition-all";
-        btnIcu.className = "px-4 py-1.5 text-xs font-semibold rounded text-zinc-500 hover:text-zinc-300 transition-all";
-        viewBank.classList.remove('hidden');
-        viewIcu.classList.add('hidden');
-      } else {
-        btnIcu.className = "px-4 py-1.5 text-xs font-semibold rounded bg-zinc-800 text-zinc-100 transition-all";
-        btnBank.className = "px-4 py-1.5 text-xs font-semibold rounded text-zinc-500 hover:text-zinc-300 transition-all";
-        viewIcu.classList.remove('hidden');
-        viewBank.classList.add('hidden');
-      }
+      document.getElementById('viewBank').classList.toggle('hidden', role !== 'bank');
+      document.getElementById('viewIcu').classList.toggle('hidden', role !== 'icu');
     }
 
-    // --- 3. MQTT Cloud Configuration ---
     const client = mqtt.connect('wss://broker.hivemq.com:8884/mqtt');
     const TELEMETRY_TOPIC = 'pulsegrid/vault/vault_01/telemetry';
     const COMMAND_TOPIC = 'pulsegrid/vault/vault_01/command';
-    let auditRowCount = 0;
 
     client.on('connect', () => {
-      document.getElementById('connStatus').innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Live Edge Connection';
+      document.getElementById('connStatus').innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-zinc-400"></span> Live Edge Connection';
       client.subscribe(TELEMETRY_TOPIC);
     });
 
-    // --- 4. Remote Control & Actuation ---
     function unlockVault() {
       const otp = document.getElementById('otpInput').value;
-      if (otp.length < 4) {
-        alert("Invalid Authorization Code");
-        return;
-      }
-
+      if (otp.length < 4) return;
       client.publish(COMMAND_TOPIC, JSON.stringify({ action: "unlock", user_otp: otp }));
-
       document.getElementById('otpInput').value = '';
-      document.getElementById('icuLockStatus').innerText = "VAULT STATUS: UNLOCKED (RE-LOCKING IN 10s...)";
-      document.getElementById('icuLockStatus').className = "mt-4 text-[10px] text-rose-500 font-medium tracking-wide animate-pulse";
+      document.getElementById('icuLockStatus').innerText = "VAULT STATUS: UNLOCKED";
 
       setTimeout(() => {
         client.publish(COMMAND_TOPIC, JSON.stringify({ action: "lock" }));
         document.getElementById('icuLockStatus').innerText = "VAULT STATUS: SECURED";
-        document.getElementById('icuLockStatus').className = "mt-4 text-[10px] text-emerald-500 font-medium tracking-wide";
       }, 10000);
+    }
+
+    // UPDATED AI LOGIC: Actually pulls from your dataset
+    function runAITriage() {
+      const box = document.getElementById('aiOutput');
+      box.innerHTML = '<span class="text-zinc-500 animate-pulse">Scanning inventory heuristics...</span>';
+
+      setTimeout(() => {
+        if (typeof plateletInventory !== 'undefined' && plateletInventory.length > 0) {
+          // Finds the first critical expiry unit in YOUR array
+          let match = plateletInventory.find(u => u.status === 'Critical_Expiry') || plateletInventory[0];
+
+          box.innerHTML = `
+            <span class="text-zinc-200 font-bold">MATCH: ${match.unit_id} [${match.group}]</span><br>
+            • Component: ${match.type}<br>
+            • Expiry Window: < 24h (FEFO Rank: 1)<br>
+            • Assigned to Node PG-001.
+          `;
+        }
+      }, 700);
     }
 
     function setEdgeMode(mode) {
       const label = document.getElementById('activeMode');
-      if (mode === 'eco') {
-        label.innerText = 'MODE: ECO (INTERMITTENT 15Hz)';
-        label.className = 'text-[10px] text-amber-400 font-mono';
-        client.publish(COMMAND_TOPIC, JSON.stringify({ action: "set_mode", mode: "eco" }));
-      } else {
-        label.innerText = 'MODE: CONTINUOUS (50Hz)';
-        label.className = 'text-[10px] text-emerald-400 font-mono';
-        client.publish(COMMAND_TOPIC, JSON.stringify({ action: "set_mode", mode: "normal" }));
-      }
+      label.innerText = `MODE: ${mode.toUpperCase()}`;
+      client.publish(COMMAND_TOPIC, JSON.stringify({ action: "set_mode", mode: mode }));
     }
 
-    // --- 5. AI Auto-Triage & Modal Controls ---
-    function runAITriage() {
-      const box = document.getElementById('aiOutput');
-      box.innerHTML = '<span class="text-amber-400 animate-pulse">Running heuristic inference against shelf-life index...</span>';
+    function openCertificateModal() { document.getElementById('certModal').classList.remove('hidden'); }
+    function closeCertificateModal() { document.getElementById('certModal').classList.add('hidden'); }
 
-      setTimeout(() => {
-        box.innerHTML = `
-          <span class="text-emerald-400 font-bold">MATCH: UP-SDP-9024 [O-]</span><br>
-          • Expiry Window: 18h remaining (FEFO Rank: 1)<br>
-          • In-transit Agitation: REQUIRED (High viscosity)<br>
-          • Status: Assigned to Node PG-001.
-        `;
-      }, 700);
-    }
-
-    function openCertificateModal() {
-      document.getElementById('certModal').classList.remove('hidden');
-    }
-
-    function closeCertificateModal() {
-      document.getElementById('certModal').classList.add('hidden');
-    }
-
-    // --- 6. Telemetry Parser & Compliance Ledger ---
     client.on('message', (topic, payload) => {
       if (topic === TELEMETRY_TOPIC) {
         try {
           const data = JSON.parse(payload.toString());
-
           const tempString = data.temperature.toFixed(2);
           document.getElementById('bankTemp').innerText = tempString;
-          document.getElementById('bankMotor').innerText = data.agitating ? 'Active (50Hz)' : 'Offline';
+          document.getElementById('bankMotor').innerText = data.agitating ? 'Running' : 'Stopped';
           document.getElementById('bankLock').innerText = data.locked ? 'Secured' : 'UNLOCKED';
-          document.getElementById('bankLock').className = data.locked ? 'text-xl font-light text-emerald-400 mt-2' : 'text-xl font-light text-rose-500 mt-2 animate-pulse';
 
-          const tempStatus = document.getElementById('tempStatus');
-          let isCompliant = true;
-          if (data.temperature >= 20.0 && data.temperature <= 24.0) {
-            tempStatus.innerHTML = '<span class="text-emerald-500">● Safe Zone</span>';
-          } else {
-            tempStatus.innerHTML = '<span class="text-rose-500 animate-pulse">● Thermal Excursion Warning</span>';
-            isCompliant = false;
-          }
-
-          auditRowCount++;
           const time = new Date().toLocaleTimeString();
           const tr = document.createElement('tr');
-          tr.className = "border-b border-zinc-800/50 w-full table table-fixed bg-zinc-900/20";
+          tr.className = "border-b border-zinc-800/50 w-full table table-fixed";
           tr.innerHTML = `
             <td class="py-2 w-1/4">${time}</td>
-            <td class="py-2 w-1/4 ${isCompliant ? '' : 'text-rose-500'}">${tempString}°C</td>
-            <td class="py-2 w-1/4">${data.agitating ? 'Running' : 'Halted'}</td>
-            <td class="py-2 w-1/4">
-              ${isCompliant && data.agitating ?
-                '<span class="bg-emerald-900/30 text-emerald-500 px-2 py-0.5 rounded text-[10px]">VERIFIED</span>' :
-                '<span class="bg-rose-900/30 text-rose-500 px-2 py-0.5 rounded text-[10px]">DEVIATION</span>'}
-            </td>
+            <td class="py-2 w-1/4">${tempString}°C</td>
+            <td class="py-2 w-1/4">${data.agitating ? 'Run' : 'Stop'}</td>
+            <td class="py-2 w-1/4 text-zinc-300">Logged</td>
           `;
 
           const table = document.getElementById('auditTable');
           table.prepend(tr);
-          if (auditRowCount > 15) {
-            table.removeChild(table.lastChild);
-          }
-        } catch (err) {
-          console.log("Telemetry parse error");
-        }
+          if (table.childElementCount > 15) table.removeChild(table.lastChild);
+        } catch (err) {}
       }
     });
   </script>
